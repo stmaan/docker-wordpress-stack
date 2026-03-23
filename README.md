@@ -1,57 +1,53 @@
-# Dockerized WordPress Stack (DevOps Practice)
+# Dockerized WordPress Stack with Monitoring (DevOps Practice)
 
-Это учебный проект для демонстрации навыков контейнеризации и оркестрации стека (WordPress + MariaDB + Redis + Nginx) с использованием Docker Compose.
+Это расширенный учебный проект, демонстрирующий навыки развертывания отказоустойчивой инфраструктуры с мониторингом (Prometheus/Grafana) и оптимизацией ресурсов.
 
-## 🚀 Что реализовано (DevOps Features)
+## 🚀 Основные фичи (DevOps Level-Up)
 
-- **Оркестрация**: Связка из 4 сервисов в изолированной сети `app-network`.
-- **Безопасность**: Все чувствительные данные (пароли, имена БД) вынесены в `.env` файл.
-- **Отказоустойчивость (Healthchecks)**: Настроены проверки состояния для всех сервисов. Приложение `app` не запустится, пока БД и Redis не подтвердят готовность к работе.
-- **Resource Management**: Установлены жесткие лимиты (Limits) на CPU и RAM для каждого контейнера, чтобы предотвратить деградацию системы.
-- **Log Management**: Настроена ротация логов (max-size: 10MB, max-file: 3) для защиты дискового пространства.
-- **Reverse Proxy**: Nginx настроен как входная точка для проксирования трафика на контейнер приложения.
+- **Полный стек**: WordPress, MariaDB, Redis, Nginx.
+- **Мониторинг (Observability)**: 
+  - **Prometheus** собирает метрики системы.
+  - **Node Exporter** отдает данные о железе (CPU, RAM, Disk).
+  - **Grafana** визуализирует состояние серверов.
+- **Безопасность**: Полная изоляция в `app-network`, пароли в `.env`.
+- **Infrastructure as Code**: Автоматическая проверка синтаксиса через **GitHub Actions**.
+- **Оптимизация**: Лимиты ресурсов (limits) и ротация логов для стабильности хоста.
 
-## 🛠 Технологический стек
-- **Docker / Docker Compose**
-- **Nginx** (Web Server & Proxy)
-- **MariaDB** (Database)
-- **Redis** (Cache)
-- **WordPress** (Application)
+## 🛠 Доступы к сервисам
 
-## 📦 Как запустить
+- **Сайт (WordPress)**: [http://localhost](http://localhost)
+- **Мониторинг (Grafana)**: [http://localhost:3000](http://localhost:3000)
+  - **Логин**: `admin`
+  - **Пароль**: `admin` (потребует смены при первом входе)
+- **Метрики (Prometheus)**: [http://localhost:9090](http://localhost:9090)
 
-1. **Клонируйте репозиторий:**
+## 📦 Быстрый старт
+
+1. **Подготовьте окружение**:
    ```bash
-   git clone <your-repo-url>
-   cd <project-folder>
+   cp .env.example .env
+   # Отредактируйте .env при необходимости
    ```
 
-2. **Настройте переменные окружения:**
-   Скопируйте пример файла или создайте свой `.env`:
+2. **Запустите всю инфраструктуру**:
    ```bash
-   # Пример .env
-   DB_NAME=blog_db
-   DB_USER=admin_user
-   DB_PASSWORD=secret_pass
-   DB_ROOT_PASSWORD=root_pass
-   APP_MEMORY=512M
-   DB_MEMORY=1G
+   docker compose up -d
    ```
 
-3. **Запустите стек:**
+3. **Проверьте статус**:
    ```bash
-   docker-compose up -d
+   docker compose ps
    ```
 
-4. **Проверьте статус сервисов:**
-   ```bash
-   docker-compose ps
-   ```
+## 📊 Как настроить графики в Grafana
 
-## 🔍 Мониторинг и проверка
-- Сайт доступен по адресу: `http://localhost`
-- Проверка доступности Redis: `docker-compose exec redis redis-cli ping`
-- Просмотр логов: `docker-compose logs -f nginx`
+1. Зайдите в Grafana (`localhost:3000`).
+2. Перейдите в **Connections** -> **Data Sources**.
+3. Нажмите **Add data source** -> **Prometheus**.
+4. В поле URL введите: `http://prometheus:9090` и нажмите **Save & Test**.
+5. Чтобы быстро получить крутой дашборд:
+   - Нажмите **Dashboards** -> **New** -> **Import**.
+   - Введите ID `1860` (Node Exporter Full) и нажмите **Load**.
 
 ---
-*Проект выполнен в рамках освоения навыков DevOps Junior.*
+*Проект реализован в рамках практики по Docker, Docker Compose и CI/CD.*
