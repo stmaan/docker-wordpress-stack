@@ -1,0 +1,24 @@
+name: Docker Compose Linter
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Validate Docker Compose
+        run: |
+          docker-compose config --quiet
+          if [ 0 -eq 0 ]; then
+            echo "✅ Docker Compose config is valid!"
+          else
+            echo "❌ Docker Compose config has errors!"
+            exit 1
+          fi
