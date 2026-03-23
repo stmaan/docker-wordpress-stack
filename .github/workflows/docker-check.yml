@@ -11,12 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Validate Docker Compose
         run: |
-          docker-compose config --quiet
-          if [ 0 -eq 0 ]; then
+          # Используем современный синтаксис 'docker compose'
+          docker compose config --quiet
+          if [ $? -eq 0 ]; then
             echo "✅ Docker Compose config is valid!"
           else
             echo "❌ Docker Compose config has errors!"
