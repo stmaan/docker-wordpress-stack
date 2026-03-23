@@ -15,11 +15,14 @@ jobs:
 
       - name: Validate Docker Compose
         run: |
-          # Используем современный синтаксис 'docker compose'
+          # Копируем пример в реальный .env, чтобы docker compose его увидел
+          cp .env.example .env
+          
           docker compose config --quiet
           if [ $? -eq 0 ]; then
-            echo "✅ Docker Compose config is valid!"
+            echo "✅ Docker Compose config is valid using .env.example!"
           else
             echo "❌ Docker Compose config has errors!"
+            docker compose config
             exit 1
           fi
