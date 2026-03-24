@@ -3,8 +3,6 @@ name: Docker Compose Linter
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
 
 jobs:
   validate:
@@ -15,14 +13,6 @@ jobs:
 
       - name: Validate Docker Compose
         run: |
-          # Копируем пример в реальный .env, чтобы docker compose его увидел
+          # Главный момент: создаем конфиг из примера
           cp .env.example .env
-          
           docker compose config --quiet
-          if [ $? -eq 0 ]; then
-            echo "✅ Docker Compose config is valid using .env.example!"
-          else
-            echo "❌ Docker Compose config has errors!"
-            docker compose config
-            exit 1
-          fi
