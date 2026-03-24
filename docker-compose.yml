@@ -138,13 +138,6 @@ services:
         limits:
           memory: 128M
 
-volumes:
-  db_data:
-
-networks:
-  app-network:
-    driver: bridge
-
   backup:
     image: mariadb:10.6
     restart: always
@@ -156,12 +149,11 @@ networks:
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
-    # Скрипт: раз в час делает дамп и удаляет файлы старше 7 дней
     entrypoint: |
       sh -c '
       while true; do
         echo "Starting backup..."
-        mariadb-dump -h $DB_HOST -u $DB_USER -p$DB_PASSWORD $DB_NAME > /backups/${DB_NAME}_$(date +%Y-%m-%d_%H-%M).sql
+        mariadb-dump -h $$DB_HOST -u $$DB_USER -p$$DB_PASSWORD $$DB_NAME > /backups/$${DB_NAME}_$$(date +%Y-%m-%d_%H-%M).sql
         echo "Backup done. Cleaning old files..."
         find /backups -type f -mtime +7 -delete
         sleep 3600
@@ -175,3 +167,10 @@ networks:
       resources:
         limits:
           memory: 128M
+
+volumes:
+  db_data:
+
+networks:
+  app-network:
+    driver: bridge
