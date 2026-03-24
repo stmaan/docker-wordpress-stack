@@ -9,3 +9,4 @@ mysql/
 *.log
 .DS_Store
 backups/
+backups/*.sql

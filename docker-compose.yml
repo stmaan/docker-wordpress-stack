@@ -144,20 +144,13 @@ services:
     logging: *default-logging
     volumes:
       - ./backups:/backups
+      - ./backup.sh:/usr/local/bin/backup.sh:ro  # Монтируем скрипт
     environment:
       - DB_HOST=db
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
-    entrypoint: |
-      sh -c '
-      while true; do
-        echo "Starting backup..."
-        mariadb-dump -h $$DB_HOST -u $$DB_USER -p$$DB_PASSWORD $$DB_NAME > /backups/$${DB_NAME}_$$(date +%Y-%m-%d_%H-%M).sql
-        echo "Backup done. Cleaning old files..."
-        find /backups -type f -mtime +7 -delete
-        sleep 3600
-      done'
+    entrypoint: ["/bin/sh", "/usr/local/bin/backup.sh"] # Запускаем файл
     depends_on:
       db:
         condition: service_healthy
