@@ -1,32 +1,50 @@
-# DevOps Showcase: WordPress Stack with Monitoring & S3 Backups
+# DevOps Portfolio: WordPress Stack + Monitoring + S3 Backups
 
-Комплексный проект для демонстрации навыков Junior DevOps: от контейнеризации приложения до настройки Observability и Disaster Recovery.
+Комплексная инфраструктура в одном Docker Compose файле. Проект демонстрирует навыки автоматизации, мониторинга и Disaster Recovery.
 
-## 📱 О приложении (WordPress)
-В качестве основы выбран **WordPress** — самая популярная CMS в мире. Она требует связки с базой данных, объектным кэшем и веб-сервером, что делает её идеальным примером для демонстрации навыков оркестрации:
-- **Backend**: PHP-FPM (внутри образа wordpress).
-- **Frontend**: Nginx (как Reverse Proxy для статики и безопасности).
-- **Cache**: Redis для ускорения генерации страниц.
-- **Database**: MariaDB 10.6.
+## 🛠 Технологический стек (Тезисно)
+- **App**: WordPress + Redis (Object Cache) + Nginx (Reverse Proxy).
+- **Database**: MariaDB 10.6 (Persistent Storage).
+- **Monitoring**: Prometheus + Grafana + Node Exporter.
+- **Automation**: CI/CD (GitHub Actions), Backup Sidecar (Cron-like script).
 
-## 🚀 DevOps Features
-- **Healthchecks**: Приложение `app` ожидает готовности БД и Redis через `service_healthy`.
-- **Resource Management**: Лимиты CPU/RAM и ротация логов (10MB x 3).
-- **CI/CD**: GitHub Actions автоматически валидирует конфиги.
-- **Monitoring**: Полный стек Prometheus + Grafana + Node Exporter.
-- **Backups**: Автоматические дампы в папку `./backups` и дублирование в **S3 Cloud**.
+## 🚀 Быстрый старт
+1. **Подготовка**:
+   ```bash
+   cp .env.example .env && mkdir -p backups
+   chmod +x backup.sh restore.sh
+   ```
+2. **Запуск**:
+   ```bash
+   docker compose up -d
+   ```
+3. **Доступы**:
+   - **Сайт**: [http://localhost](http://localhost)
+   - **Grafana**: [http://localhost:3000](http://localhost:3000) (admin/admin)
 
-## 💾 Резервное копирование и восстановление
-### Логика бэкапа
-Скрипт `backup.sh` делает дампы каждый час и удаляет старые копии (7+ дней).
-### Как восстановить данные:
+## 💾 Работа с бэкапами (Backup & Restore)
+
+### Логика бэкапирования
+Сервис `backup` ежечасно запускает `backup.sh`.
+- **Локально**: Файлы сохраняются в папку `./backups`.
+- **Облако**: Если в `.env` указаны S3-ключи, дампы дублируются в S3.
+- **Очистка**: Локальные дампы старше 7 дней удаляются автоматически.
+
+### Как восстановить данные
+Используйте готовый скрипт на хосте (передав имя файла из папки backups):
 ```bash
-./restore.sh <имя_файла.sql>
+./restore.sh blog_db_2024-05-20_14-00.sql
 ```
 
-## 🛠 Быстрый старт
-1. `cp .env.example .env`
-2. `docker compose up -d`
+## 📊 Настройка мониторинга
+1. Зайдите в Grafana -> **Data Sources** -> **Add Prometheus**.
+2. Введите URL: `http://prometheus:9090` -> **Save & Test**.
+3. Нажмите **Import Dashboard** -> ID: `1860` (Node Exporter Full).
+
+## 🛡 Безопасность и CI/CD
+- **Secrets**: Все пароли только в `.env` (игнорируется гитом).
+- **Linter**: GitHub Actions проверяет синтаксис YAML при каждом `git push`.
+- **Limits**: Ограничение ресурсов (CPU/RAM) для каждого контейнера.
 
 ---
-*Проект подготовлен для портфолио DevOps Junior.*
+*Проект подготовлен для демонстрации навыков DevOps Junior.*
