@@ -1,53 +1,36 @@
-# Dockerized WordPress Stack with Monitoring (DevOps Practice)
+# Dockerized WordPress Stack with Monitoring & Backups
 
-Это расширенный учебный проект, демонстрирующий навыки развертывания отказоустойчивой инфраструктуры с мониторингом (Prometheus/Grafana) и оптимизацией ресурсов.
+Это комплексный проект инфраструктуры (Self-hosted Blog), демонстрирующий навыки Junior DevOps: контейнеризацию, мониторинг, CI/CD и стратегию сохранения данных.
 
-## 🚀 Основные фичи (DevOps Level-Up)
+## 🚀 DevOps Features
 
-- **Полный стек**: WordPress, MariaDB, Redis, Nginx.
-- **Мониторинг (Observability)**: 
-  - **Prometheus** собирает метрики системы.
-  - **Node Exporter** отдает данные о железе (CPU, RAM, Disk).
-  - **Grafana** визуализирует состояние серверов.
-- **Безопасность**: Полная изоляция в `app-network`, пароли в `.env`.
-- **Infrastructure as Code**: Автоматическая проверка синтаксиса через **GitHub Actions**.
-- **Оптимизация**: Лимиты ресурсов (limits) и ротация логов для стабильности хоста.
+- **Стек**: WordPress, MariaDB, Redis, Nginx.
+- **Мониторинг**: Сбор метрик (Prometheus + Node Exporter) и визуализация (Grafana).
+- **Автоматические бэкапы**: Отдельный сервис `backup` создает дампы БД каждый час и хранит их 7 дней (Retention Policy).
+- **CI/CD**: GitHub Actions автоматически проверяет синтаксис Compose-файла при каждом пуше.
+- **Оптимизация**: Лимиты ресурсов (CPU/RAM) и ротация логов (10MB x 3).
 
 ## 🛠 Доступы к сервисам
 
-- **Сайт (WordPress)**: [http://localhost](http://localhost)
-- **Мониторинг (Grafana)**: [http://localhost:3000](http://localhost:3000)
-  - **Логин**: `admin`
-  - **Пароль**: `admin` (потребует смены при первом входе)
-- **Метрики (Prometheus)**: [http://localhost:9090](http://localhost:9090)
+- **WordPress**: [http://localhost](http://localhost)
+- **Grafana**: [http://localhost:3000](http://localhost:3000) (admin/admin)
+- **Бэкапы**: Локальная папка `./backups` (скрыта из Git для безопасности).
 
 ## 📦 Быстрый старт
 
-1. **Подготовьте окружение**:
+1. **Конфигурация**:
    ```bash
    cp .env.example .env
-   # Отредактируйте .env при необходимости
+   mkdir -p backups
    ```
 
-2. **Запустите всю инфраструктуру**:
+2. **Запуск**:
    ```bash
    docker compose up -d
    ```
 
-3. **Проверьте статус**:
-   ```bash
-   docker compose ps
-   ```
-
-## 📊 Как настроить графики в Grafana
-
-1. Зайдите в Grafana (`localhost:3000`).
-2. Перейдите в **Connections** -> **Data Sources**.
-3. Нажмите **Add data source** -> **Prometheus**.
-4. В поле URL введите: `http://prometheus:9090` и нажмите **Save & Test**.
-5. Чтобы быстро получить крутой дашборд:
-   - Нажмите **Dashboards** -> **New** -> **Import**.
-   - Введите ID `1860` (Node Exporter Full) и нажмите **Load**.
+## 💾 Схема бэкапов
+Сервис бэкапа выполняет `mariadb-dump` по расписанию. Файлы именуются по дате: `blog_db_YYYY-MM-DD_HH-MM.sql`. Скрипт автоматически удаляет файлы старше 7 суток, чтобы не переполнять диск.
 
 ---
-*Проект реализован в рамках практики по Docker, Docker Compose и CI/CD.*
+*Проект выполнен для демонстрации навыков DevOps Junior.*

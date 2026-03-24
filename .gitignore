@@ -8,3 +8,4 @@ mysql/
 # Логи и временные файлы
 *.log
 .DS_Store
+backups/
