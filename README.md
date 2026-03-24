@@ -1,36 +1,62 @@
-# Dockerized WordPress Stack with Monitoring & Backups
+# Production-ready WordPress Stack with Monitoring & Backups
 
-Это комплексный проект инфраструктуры (Self-hosted Blog), демонстрирующий навыки Junior DevOps: контейнеризацию, мониторинг, CI/CD и стратегию сохранения данных.
+Комплексный DevOps-проект по развертыванию масштабируемой и отказоустойчивой инфраструктуры на базе Docker Compose. Проект включает в себя веб-стек, систему мониторинга и автоматизированное резервное копирование.
+
+## 🏗 Архитектура проекта
+
+- **Application Layer**: WordPress + Redis (Object Cache) + Nginx (Reverse Proxy).
+- **Database Layer**: MariaDB 10.6 с выделенным томом для персистентности данных.
+- **Monitoring Layer**: Prometheus (сбор метрик) + Grafana (визуализация) + Node Exporter (метрики хоста).
+- **Data Protection**: Автономный сервис бэкапов с политикой удержания (Retention Policy).
 
 ## 🚀 DevOps Features
 
-- **Стек**: WordPress, MariaDB, Redis, Nginx.
-- **Мониторинг**: Сбор метрик (Prometheus + Node Exporter) и визуализация (Grafana).
-- **Автоматические бэкапы**: Отдельный сервис `backup` создает дампы БД каждый час и хранит их 7 дней (Retention Policy).
-- **CI/CD**: GitHub Actions автоматически проверяет синтаксис Compose-файла при каждом пуше.
-- **Оптимизация**: Лимиты ресурсов (CPU/RAM) и ротация логов (10MB x 3).
+- **Healthchecks**: Приложение ожидает полной готовности БД и Redis перед стартом.
+- **Resource Limits**: Жесткие лимиты CPU/RAM для предотвращения OOM на хосте.
+- **Log Rotation**: Ограничение размера логов до 10MB (хранение 3-х последних файлов).
+- **CI/CD**: GitHub Actions автоматически валидирует Docker Compose конфиг при каждом пуше.
+- **Modular Scripts**: Логика бэкапа и восстановления вынесена в отдельные `.sh` скрипты.
 
-## 🛠 Доступы к сервисам
+## 💾 Резервное копирование и восстановление
 
-- **WordPress**: [http://localhost](http://localhost)
-- **Grafana**: [http://localhost:3000](http://localhost:3000) (admin/admin)
-- **Бэкапы**: Локальная папка `./backups` (скрыта из Git для безопасности).
+### Логика бэкапа
+Сервис `backup` запускает скрипт `backup.sh` внутри контейнера MariaDB. 
+- **Частота**: Каждый час (3600 сек).
+- **Хранение**: Локальная директория `./backups` на хосте.
+- **Retention**: Автоматическое удаление дампов старше 7 дней.
+- **Формат имени**: `blog_db_YYYY-MM-DD_HH-MM.sql`
 
-## 📦 Быстрый старт
+### Как восстановить данные
+Для быстрого восстановления создан вспомогательный скрипт `restore.sh`.
 
-1. **Конфигурация**:
+1. Посмотрите список доступных бэкапов:
    ```bash
-   cp .env.example .env
-   mkdir -p backups
+   ls -lh backups/
    ```
 
-2. **Запуск**:
+2. Запустите восстановление (передав имя файла):
+   ```bash
+   ./restore.sh blog_db_2024-05-20_14-00.sql
+   ```
+Скрипт автоматически подключится к контейнеру БД и импортирует дамп.
+
+## 🛠 Быстрый старт
+
+1. **Настройка окружения**:
+   ```bash
+   cp .env.example .env
+   chmod +x backup.sh restore.sh
+   ```
+
+2. **Запуск всей инфраструктуры**:
    ```bash
    docker compose up -d
    ```
 
-## 💾 Схема бэкапов
-Сервис бэкапа выполняет `mariadb-dump` по расписанию. Файлы именуются по дате: `blog_db_YYYY-MM-DD_HH-MM.sql`. Скрипт автоматически удаляет файлы старше 7 суток, чтобы не переполнять диск.
+3. **Доступы**:
+   - **Сайт**: [http://localhost](http://localhost)
+   - **Grafana**: [http://localhost:3000](http://localhost:3000) (admin/admin)
+   - **Prometheus**: [http://localhost:9090](http://localhost:9090)
 
 ---
-*Проект выполнен для демонстрации навыков DevOps Junior.*
+*Проект подготовлен для демонстрации навыков Junior DevOps Engineer.*
